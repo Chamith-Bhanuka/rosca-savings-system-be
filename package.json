@@ -1,10 +1,32 @@
 {
-  "dependencies": {
-    "express": "^5.1.0",
-    "mongoose": "^9.0.0"
+  "name": "rosca-be",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "format": "prettier --write \"src/**/*.{ts,js,json}\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chamith-Bhanuka/rosca-savings-system-be.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Chamith-Bhanuka/rosca-savings-system-be/issues"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",
     "@types/mongoose": "^5.11.96"
-  }
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongoose": "^9.0.0"
+  },
+  "homepage": "https://github.com/Chamith-Bhanuka/rosca-savings-system-be#readme"
 }
