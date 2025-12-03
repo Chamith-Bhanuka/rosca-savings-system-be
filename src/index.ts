@@ -2,6 +2,8 @@ import express = require('express');
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRouter from './routes/auth.routes';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
 
 dotenv.config();
 const SERVER_PORT = process.env.SERVER_PORT;
@@ -10,6 +12,14 @@ const MONGODB_URI = process.env.MONGO_URI as string;
 const app = express();
 
 app.use(express.json());
+
+app.use(
+  cors({
+    origin: ['http://localhost:5173'],
+  })
+);
+
+app.use(cookieParser());
 
 app.use('/api/v1/auth', authRouter);
 
