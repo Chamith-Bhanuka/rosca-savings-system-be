@@ -1,5 +1,10 @@
 import { Router } from 'express';
-import { register, login, getMe } from '../controllers/auth.controller';
+import {
+  register,
+  login,
+  getMe,
+  refreshToken,
+} from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
 const router = Router();
@@ -10,5 +15,7 @@ router.post('/login', login);
 
 // Protected
 router.get('/me', authenticate, getMe);
+
+router.post('/refresh', refreshToken);
 
 export default router;
