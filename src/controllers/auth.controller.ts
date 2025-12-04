@@ -87,7 +87,7 @@ export const login = async (req: Request, res: Response) => {
 
     const accessToken = signAccessToken(existingUser);
 
-    const refreshToken = signRefreshToken(existingUser);
+    const refreshToken = await signRefreshToken(existingUser);
 
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
