@@ -5,6 +5,7 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { signAccessToken, signRefreshToken } from '../utils/token';
 import jwt from 'jsonwebtoken';
 import dotenv from 'dotenv';
+import { RefreshToken } from '../model/refresh_token.model';
 dotenv.config();
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
@@ -139,5 +140,31 @@ export const refreshToken = async (req: Request, res: Response) => {
     return res
       .status(403)
       .json({ message: 'Invalid or expired refresh token.!', error: err });
+  }
+};
+
+export const logout = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Unauthorized.!' });
+    }
+
+    const userId = req.user.sub;
+
+    if (userId) {
+      await RefreshToken.deleteMany({ user: userId });
+    }
+
+    res.clearCookie('refreshToken', {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'strict',
+    });
+
+    return res.status(200).json({ message: 'Logged out successfully.!' });
+  } catch (err: any) {
+    return res
+      .status(500)
+      .json({ message: 'Logout failed', error: err.message });
   }
 };
