@@ -4,6 +4,7 @@ import {
   login,
   getMe,
   refreshToken,
+  logout,
 } from '../controllers/auth.controller';
 import { authenticate } from '../middleware/auth.middleware';
 
@@ -15,6 +16,7 @@ router.post('/login', login);
 
 // Protected
 router.get('/me', authenticate, getMe);
+router.post('/logout', authenticate, logout);
 
 router.post('/refresh', refreshToken);
 
