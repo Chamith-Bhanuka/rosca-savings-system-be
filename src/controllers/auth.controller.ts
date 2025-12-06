@@ -1,4 +1,4 @@
-import e, { Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { IUser, User } from '../model/user.model';
 import bcrypt from 'bcryptjs';
 import { AuthRequest } from '../middleware/auth.middleware';
