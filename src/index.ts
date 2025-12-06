@@ -2,6 +2,7 @@ import express = require('express');
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRouter from './routes/auth.routes';
+import groupRouter from './routes/group.routes';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 
@@ -23,6 +24,7 @@ app.use(
 app.use(cookieParser());
 
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/group', groupRouter);
 
 app.use('/', (req, res) => {
   res.send('Backend is running..!');
