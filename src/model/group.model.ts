@@ -24,6 +24,7 @@ export interface IGroup extends Document {
   autoAccept: boolean;
   members: mongoose.Types.ObjectId[];
   createdBy: mongoose.Types.ObjectId;
+  createdUserName: string;
   createdAt: Date;
   currentCycle: number;
   maxCycles: number;
@@ -55,6 +56,7 @@ const GroupSchema = new Schema<IGroup>({
   autoAccept: { type: Boolean, default: false },
   members: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  createdUserName: { type: String },
   createdAt: { type: Date, default: Date.now },
   currentCycle: { type: Number, default: 1 },
   maxCycles: { type: Number, required: true },
