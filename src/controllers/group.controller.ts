@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { User, Role } from '../model/user.model';
 import { Frequency, Group } from '../model/group.model';
@@ -49,6 +49,8 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
 
     const computedMaxCycles = totalMembers;
 
+    const createdUserName = user.firstName + ' ' + user.lastName;
+
     const groupDoc = {
       name: groupName.trim(),
       description: description ? String(description).trim() : undefined,
@@ -59,6 +61,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       autoAccept: Boolean(autoAccept),
       members: [user._id],
       createdBy: user._id,
+      createdUserName,
       maxCycles: computedMaxCycles,
       currentCycle: 1,
       badges: [],
@@ -123,5 +126,34 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
   } catch (error: any) {
     console.error(error);
     return res.status(500).json({ message: error.message || 'Server Error' });
+  }
+};
+
+export const getAllGroups = async (req: Request, res: Response) => {
+  try {
+    //Pagination
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 4;
+    const skip = (page - 1) * limit;
+
+    const groups = await Group.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Group.countDocuments();
+
+    return res.status(200).json({
+      message: 'Groups found successfully.!',
+      data: groups,
+      totalPages: Math.ceil(total / limit),
+      totalCount: total,
+      page,
+    });
+  } catch (err: any) {
+    console.error(err);
+    return res
+      .status(500)
+      .json({ message: err.message || 'Failed to get groups.!' });
   }
 };
