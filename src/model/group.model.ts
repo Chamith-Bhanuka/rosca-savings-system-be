@@ -32,6 +32,7 @@ export interface IGroup extends Document {
   rating: number;
   ratings: { user: mongoose.Types.ObjectId; score: number }[];
   disputes: mongoose.Types.ObjectId[];
+  pendingRequests: { user: mongoose.Types.ObjectId; requestedAt: Date }[];
   status: Status;
   payoutOrder: mongoose.Types.ObjectId[];
   currentPayoutIndex: number;
@@ -69,6 +70,7 @@ const GroupSchema = new Schema<IGroup>({
     },
   ],
   disputes: [{ type: Schema.Types.ObjectId, ref: 'Dispute' }],
+  pendingRequests: [{ user: Schema.Types.ObjectId, requestedAt: Date }],
   status: {
     type: String,
     enum: Object.values(Status),
