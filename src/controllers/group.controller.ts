@@ -5,6 +5,7 @@ import { Frequency, Group } from '../model/group.model';
 import crypto from 'crypto';
 import { Audit } from '../model/audit.model';
 import { EntityType } from '../model/audit.model';
+import { Notification } from '../model/notification.model';
 
 function computeHash(payload: object, prevHash?: string) {
   const json = JSON.stringify({ payload, prevHash: prevHash || '' });
@@ -64,7 +65,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       createdUserName,
       maxCycles: computedMaxCycles,
       currentCycle: 1,
-      badges: [],
+      badges: [] as string[],
       rating: 0,
       rations: [],
       disputes: [],
@@ -77,6 +78,11 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
       },
       auditHash: undefined,
     };
+
+    // Add auto-accept badge
+    if (groupDoc.autoAccept) {
+      groupDoc.badges.push('Auto-Accept');
+    }
 
     // Create group
     const createdGroup = await Group.create(groupDoc);
@@ -109,7 +115,7 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
     createdGroup.auditHash = initialHash;
     await createdGroup.save();
 
-    // Promote user role if necessary
+    // Promote user role
     if (user.role === 'USER') {
       user.role = Role.Moderator;
     }
@@ -156,4 +162,65 @@ export const getAllGroups = async (req: Request, res: Response) => {
       .status(500)
       .json({ message: err.message || 'Failed to get groups.!' });
   }
+};
+
+export const joinGroup = async (req: AuthRequest, res: Response) => {
+  const userId = req.user.sub;
+  const { groupId } = req.params;
+
+  if (!userId) return res.status(401).json({ message: 'Unauthorized.!' });
+
+  const group = await Group.findById(groupId);
+  if (!group) return res.status(404).json({ message: 'Group not found.!' });
+
+  if (group.status !== 'ACTIVE')
+    return res.status(400).json({ message: 'Group not active.!' });
+  if (group.members.length >= group.totalMembers)
+    return res.status(400).json({ message: 'Group is full.!' });
+  if (group.members.some((m) => m.equals(userId)))
+    return res.status(400).json({ message: 'Already a member.!' });
+
+  // @ts-ignore
+  if (group.pendingRequests?.some((r) => r.user.equals(userId)))
+    return res.status(409).json({ message: 'Request already pending.!' });
+
+  if (group.autoAccept) {
+    group.members.push(userId);
+    // payout order logic
+    await group.save();
+
+    await User.findByIdAndUpdate(userId, { $addToSet: { groups: group._id } });
+
+    await Notification.create({
+      user: userId,
+      group: group._id,
+      type: 'GROUP_JOINED',
+      payload: { groupId },
+    });
+
+    return res
+      .status(200)
+      .json({ message: 'Group joined successfully.!', joined: true });
+  }
+
+  group.pendingRequests = group.pendingRequests || [];
+  // @ts-ignore
+  group.pendingRequests.push({ user: userId, requestedAt: new Date() });
+  await group.save();
+
+  await User.findByIdAndUpdate(userId, {
+    $addToSet: { pendingGroups: group._id },
+  });
+
+  const moderatorId = group.createdBy;
+  await Notification.create({
+    user: moderatorId,
+    group: group._id,
+    type: 'JOIN_REQUEST',
+    payload: { userId, groupId },
+  });
+
+  return res
+    .status(202)
+    .json({ message: 'Join request submitted successfully.!', pending: true });
 };
