@@ -6,6 +6,8 @@ export enum Type {
   Dispute_Update = 'DISPUTE_UPDATE',
   Group_Invite = 'GROUP_INVITE',
   General = 'GENERAL',
+  Join_Request = 'JOIN_REQUEST',
+  Group_Joined = 'GROUP_JOINED',
 }
 
 export interface INotification extends Document {
