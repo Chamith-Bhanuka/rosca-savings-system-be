@@ -224,3 +224,49 @@ export const joinGroup = async (req: AuthRequest, res: Response) => {
     .status(202)
     .json({ message: 'Join request submitted successfully.!', pending: true });
 };
+
+export const acceptJoinRequest = async (req: AuthRequest, res: Response) => {
+  const actorId = req.user?.sub;
+  const { groupId, userId } = req.params;
+
+  const group = await Group.findById(groupId);
+  if (!group) {
+    return res.status(404).json({ message: 'Group not found' });
+  }
+
+  console.log(actorId);
+  console.log(group.createdBy);
+
+  if (!group.createdBy.equals(actorId)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  const result = await Group.updateOne(
+    {
+      _id: groupId,
+      'pendingRequests.user': userId,
+    },
+    {
+      $pull: { pendingRequests: { user: userId } },
+      $addToSet: { members: userId },
+    }
+  );
+
+  if (result.modifiedCount === 0) {
+    return res.status(404).json({ message: 'Pending request not found' });
+  }
+
+  await User.findByIdAndUpdate(userId, {
+    $addToSet: { groups: groupId },
+    $pull: { pendingGroups: groupId },
+  });
+
+  await Notification.create({
+    user: userId,
+    group: groupId,
+    type: 'JOIN_ACCEPTED',
+    payload: { groupId },
+  });
+
+  return res.status(200).json({ message: 'User accepted into group' });
+};
