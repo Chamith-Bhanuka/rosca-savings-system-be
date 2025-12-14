@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware';
 import {
+  acceptJoinRequest,
   createGroup,
   getAllGroups,
   joinGroup,
@@ -13,5 +14,11 @@ router.post('/create', authenticate, createGroup);
 router.get('/', getAllGroups);
 
 router.post('/:groupId/join', authenticate, joinGroup);
+
+router.post(
+  '/:groupId/pending/:userId/accept',
+  authenticate,
+  acceptJoinRequest
+);
 
 export default router;
