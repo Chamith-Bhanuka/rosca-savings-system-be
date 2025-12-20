@@ -9,6 +9,7 @@ export enum Type {
   Join_Request = 'JOIN_REQUEST',
   Group_Joined = 'GROUP_JOINED',
   Join_Accepted = 'JOIN_ACCEPTED',
+  Join_Declined = 'JOIN_DECLINED',
 }
 
 export interface INotification extends Document {
