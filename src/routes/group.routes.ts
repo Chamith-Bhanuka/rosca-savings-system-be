@@ -3,6 +3,7 @@ import { authenticate } from '../middleware/auth.middleware';
 import {
   acceptJoinRequest,
   createGroup,
+  declineJoinRequest,
   getAllGroups,
   joinGroup,
 } from '../controllers/group.controller';
@@ -19,6 +20,12 @@ router.post(
   '/:groupId/pending/:userId/accept',
   authenticate,
   acceptJoinRequest
+);
+
+router.post(
+  '/:groupId/pending/:userId/decline',
+  authenticate,
+  declineJoinRequest
 );
 
 export default router;
