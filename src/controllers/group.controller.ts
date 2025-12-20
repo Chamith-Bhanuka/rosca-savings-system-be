@@ -6,6 +6,7 @@ import crypto from 'crypto';
 import { Audit } from '../model/audit.model';
 import { EntityType } from '../model/audit.model';
 import { Notification } from '../model/notification.model';
+import mongoose from 'mongoose';
 
 function computeHash(payload: object, prevHash?: string) {
   const json = JSON.stringify({ payload, prevHash: prevHash || '' });
@@ -269,4 +270,48 @@ export const acceptJoinRequest = async (req: AuthRequest, res: Response) => {
   });
 
   return res.status(200).json({ message: 'User accepted into group' });
+};
+
+export const declineJoinRequest = async (req: AuthRequest, res: Response) => {
+  const actorId = req.user?.sub;
+  const { groupId, userId } = req.params;
+
+  const group = await Group.findById(groupId);
+  if (!group) {
+    return res.status(404).json({ message: 'Group not found' });
+  }
+
+  if (!group.createdBy.equals(actorId)) {
+    return res.status(403).json({ message: 'Forbidden' });
+  }
+
+  const groupObjectId = new mongoose.Types.ObjectId(groupId);
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+
+  const result = await Group.updateOne(
+    {
+      _id: groupObjectId,
+      'pendingRequests.user': userObjectId,
+    },
+    {
+      $pull: { pendingRequests: { user: userObjectId } },
+    }
+  );
+
+  if (result.modifiedCount === 0) {
+    return res.status(404).json({ message: 'Pending request not found' });
+  }
+
+  await User.findByIdAndUpdate(userObjectId, {
+    $pull: { pendingGroups: groupObjectId },
+  });
+
+  await Notification.create({
+    user: userObjectId,
+    group: groupObjectId,
+    type: 'JOIN_DECLINED',
+    payload: { groupId },
+  });
+
+  return res.status(200).json({ message: 'Join request declined' });
 };
