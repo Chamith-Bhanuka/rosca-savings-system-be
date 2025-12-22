@@ -28,6 +28,9 @@ export async function createAndDispatchNotification({
 
   try {
     const io = getIo();
+
+    console.log('📤 Emitting notification to room:', userId.toString());
+
     io.to(userId.toString()).emit('notification:new', {
       id: note._id,
       type: note.type,
