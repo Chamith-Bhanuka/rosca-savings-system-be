@@ -6,7 +6,7 @@ let io: Server;
 
 export function initSocket(server: http.Server) {
   io = new Server(server, {
-    cors: { origin: process.env.FRONTEND_ORIGIN || '*' },
+    cors: { origin: '*' },
     pingTimeout: 3000,
   });
 
@@ -31,8 +31,13 @@ export function initSocket(server: http.Server) {
   });
 
   io.on('connection', (socket) => {
+    console.log('🟢 socket connected', socket.id, socket.data.userId);
+
     const uid = socket.data.userId;
     socket.join(uid.toString());
+
+    console.log('📦 rooms:', Array.from(socket.rooms));
+
     socket.emit('connected', { message: 'connected', userId: uid });
 
     socket.on('disconnect', (reason) => {
