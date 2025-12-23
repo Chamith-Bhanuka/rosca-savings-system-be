@@ -5,6 +5,8 @@ import authRouter from './routes/auth.routes';
 import groupRouter from './routes/group.routes';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import http from 'http';
+import { initSocket } from './server/socket';
 
 dotenv.config();
 const SERVER_PORT = process.env.SERVER_PORT;
@@ -30,6 +32,9 @@ app.use('/', (req, res) => {
   res.send('Backend is running..!');
 });
 
+const server = http.createServer(app);
+initSocket(server);
+
 mongoose
   .connect(MONGODB_URI)
   .then(() => {
@@ -40,6 +45,6 @@ mongoose
     process.exit(1);
   });
 
-app.listen(SERVER_PORT, () => {
+server.listen(5000, () => {
   console.log(`Server is running on port ${SERVER_PORT}`);
 });
