@@ -7,6 +7,7 @@ import { Audit } from '../model/audit.model';
 import { EntityType } from '../model/audit.model';
 import { Notification } from '../model/notification.model';
 import mongoose from 'mongoose';
+import { createAndDispatchNotification } from '../services/notification.service';
 
 function computeHash(payload: object, prevHash?: string) {
   const json = JSON.stringify({ payload, prevHash: prevHash || '' });
@@ -214,9 +215,9 @@ export const joinGroup = async (req: AuthRequest, res: Response) => {
   });
 
   const moderatorId = group.createdBy;
-  await Notification.create({
-    user: moderatorId,
-    group: group._id,
+  await createAndDispatchNotification({
+    userId: moderatorId,
+    groupId: group._id,
     type: 'JOIN_REQUEST',
     payload: { userId, groupId },
   });
