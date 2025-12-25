@@ -8,6 +8,7 @@ export enum PaymentMethod {
 
 export enum Status {
   Pending = 'PENDING',
+  PendingApproval = 'PENDING_APPROVAL',
   Confirmed = 'CONFIRMED',
   Rejected = 'REJECTED',
   Late = 'LATE',
@@ -22,6 +23,7 @@ export interface IContribution extends Document {
   paymentMethod: PaymentMethod;
   paymentGatewayId?: string;
   proofUrl?: string;
+  rejectionReason?: string;
   status: Status;
   confirmedAt?: Date;
   createdAt: Date;
@@ -40,6 +42,7 @@ const ContributionSchema = new Schema<IContribution>({
   },
   paymentGatewayId: { type: String },
   proofUrl: { type: String },
+  rejectionReason: { type: String },
   status: {
     type: String,
     enum: Object.values(Status),
@@ -50,4 +53,7 @@ const ContributionSchema = new Schema<IContribution>({
   auditHash: { type: String },
 });
 
-export const Contribution = mongoose.model('Contribution', ContributionSchema);
+export const Contribution = mongoose.model<IContribution>(
+  'Contribution',
+  ContributionSchema
+);
