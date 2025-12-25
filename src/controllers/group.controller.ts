@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { User, Role } from '../model/user.model';
-import { Frequency, Group } from '../model/group.model';
+import { Frequency, Group, IGroup } from '../model/group.model';
 import crypto from 'crypto';
 import { Audit } from '../model/audit.model';
 import { EntityType } from '../model/audit.model';
@@ -315,4 +315,49 @@ export const declineJoinRequest = async (req: AuthRequest, res: Response) => {
   });
 
   return res.status(200).json({ message: 'Join request declined' });
+};
+
+export const generatePayoutOrder = async (group: IGroup) => {
+  const moderatorId = group.createdBy as mongoose.Types.ObjectId;
+
+  let participants = group.members.filter((m) => !m.equals(moderatorId));
+
+  for (let i = participants.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [participants[i], participants[j]] = [participants[j], participants[i]];
+  }
+
+  const finalOrder = [...participants, moderatorId];
+
+  group.payoutOrder = finalOrder;
+  await group.save();
+  return finalOrder;
+};
+
+export const getGroupDetails = async (req: Request, res: Response) => {
+  const { groupId } = req.params;
+
+  try {
+    const group = await Group.findById(groupId)
+      .populate('createdBy', 'firstName lastName email')
+      .populate('members', 'firstName lastName email avatarUrl')
+      .populate(
+        'pendingRequests.user',
+        'firstName lastName email avatarUrl trustScore'
+      );
+
+    if (!group) {
+      return res.status(404).json({ message: 'Group not found.!' });
+    }
+
+    res.status(200).json({
+      message: 'Group details fetched successfully.!',
+      data: group,
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res
+      .status(500)
+      .json({ message: error.message || 'Error getting group details.' });
+  }
 };
