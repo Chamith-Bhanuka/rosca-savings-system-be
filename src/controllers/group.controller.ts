@@ -8,7 +8,6 @@ import { EntityType } from '../model/audit.model';
 import { Notification } from '../model/notification.model';
 import mongoose from 'mongoose';
 import { createAndDispatchNotification } from '../services/notification.service';
-import { populate } from 'dotenv';
 
 function computeHash(payload: object, prevHash?: string) {
   const json = JSON.stringify({ payload, prevHash: prevHash || '' });
