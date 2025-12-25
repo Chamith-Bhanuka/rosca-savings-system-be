@@ -39,7 +39,10 @@ export interface IGroup extends Document {
   settings: {
     allowBidding: boolean;
     escrowEnabled: boolean;
+    securityDepositAmount: number;
   };
+  nextPaymentDate: Date;
+  drawTime: string;
   auditHash?: string;
 }
 
@@ -70,7 +73,12 @@ const GroupSchema = new Schema<IGroup>({
     },
   ],
   disputes: [{ type: Schema.Types.ObjectId, ref: 'Dispute' }],
-  pendingRequests: [{ user: Schema.Types.ObjectId, requestedAt: Date }],
+  pendingRequests: [
+    {
+      user: { type: Schema.Types.ObjectId, ref: 'User' },
+      requestedAt: { type: Date },
+    },
+  ],
   status: {
     type: String,
     enum: Object.values(Status),
@@ -81,7 +89,10 @@ const GroupSchema = new Schema<IGroup>({
   settings: {
     allowBidding: { type: Boolean, default: false },
     escrowEnabled: { type: Boolean, default: false },
+    securityDepositAmount: { type: Number, default: 0 },
   },
+  nextPaymentDate: { type: Date },
+  drawTime: { type: String, default: '23:00' },
   auditHash: { type: String },
 });
 
