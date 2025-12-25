@@ -7,6 +7,7 @@ import {
   getAllGroups,
   joinGroup,
   getGroupDetails,
+  triggerManualDraw,
 } from '../controllers/group.controller';
 
 const router = Router();
@@ -30,5 +31,7 @@ router.post(
   authenticate,
   declineJoinRequest
 );
+
+router.post('/:groupId/draw', authenticate, triggerManualDraw);
 
 export default router;
