@@ -8,6 +8,7 @@ import { EntityType } from '../model/audit.model';
 import { Notification } from '../model/notification.model';
 import mongoose from 'mongoose';
 import { createAndDispatchNotification } from '../services/notification.service';
+import { populate } from 'dotenv';
 
 function computeHash(payload: object, prevHash?: string) {
   const json = JSON.stringify({ payload, prevHash: prevHash || '' });
@@ -344,7 +345,8 @@ export const getGroupDetails = async (req: Request, res: Response) => {
       .populate(
         'pendingRequests.user',
         'firstName lastName email avatarUrl trustScore'
-      );
+      )
+      .populate('payoutOrder', 'firstName lastName email avatarUrl');
 
     if (!group) {
       return res.status(404).json({ message: 'Group not found.!' });
@@ -359,5 +361,58 @@ export const getGroupDetails = async (req: Request, res: Response) => {
     return res
       .status(500)
       .json({ message: error.message || 'Error getting group details.' });
+  }
+};
+
+export const triggerManualDraw = async (req: AuthRequest, res: Response) => {
+  const { groupId } = req.params;
+  const userId = req.user.sub;
+
+  try {
+    const group = await Group.findById(groupId);
+
+    if (!group) return res.status(404).json({ message: 'Group not found.!' });
+
+    if (!group.createdBy.equals(userId)) {
+      return res
+        .status(403)
+        .json({ message: 'Only Moderator can start the draw.!' });
+    }
+
+    if (group.payoutOrder && group.payoutOrder.length > 0) {
+      return res
+        .status(400)
+        .json({ message: 'Draw has already been completed.!' });
+    }
+
+    if (group.members.length < group.totalMembers) {
+      return res.status(400).json({ message: 'Group is not full yet.!' });
+    }
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const groupStart = new Date(group.startDate);
+    groupStart.setHours(0, 0, 0, 0);
+
+    if (today < groupStart) {
+      return res
+        .status(400)
+        .json({ message: 'Cannot start draw before the start Date.!' });
+    }
+
+    await generatePayoutOrder(group);
+
+    const updatedGroup = await Group.findById(groupId).populate(
+      'payoutOrder',
+      'firstName lastName'
+    );
+
+    return res.status(200).json({
+      message: 'Draw completed successfully! Payout order generated.!',
+      payoutOrder: updatedGroup?.payoutOrder,
+    });
+  } catch (error: any) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
   }
 };
