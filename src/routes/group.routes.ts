@@ -6,6 +6,7 @@ import {
   declineJoinRequest,
   getAllGroups,
   joinGroup,
+  getGroupDetails,
 } from '../controllers/group.controller';
 
 const router = Router();
@@ -13,6 +14,8 @@ const router = Router();
 router.post('/create', authenticate, createGroup);
 
 router.get('/', getAllGroups);
+
+router.get('/:groupId', authenticate, getGroupDetails);
 
 router.post('/:groupId/join', authenticate, joinGroup);
 
