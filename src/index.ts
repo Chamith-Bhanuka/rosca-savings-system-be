@@ -4,6 +4,8 @@ import mongoose from 'mongoose';
 import authRouter from './routes/auth.routes';
 import groupRouter from './routes/group.routes';
 import notificationRouter from './routes/notification.routes';
+import paymentRouter from './routes/payment.routes';
+import contributionRouter from './routes/contribution.routes';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import http from 'http';
@@ -29,6 +31,8 @@ app.use(cookieParser());
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/group', groupRouter);
 app.use('/api/v1/notifications', notificationRouter);
+app.use('/api/v1/payment', paymentRouter);
+app.use('/api/v1/contribution', contributionRouter);
 
 app.use('/', (req, res) => {
   res.send('Backend is running..!');
