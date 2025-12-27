@@ -1,6 +1,9 @@
 import { Router } from 'express';
 import { authenticate } from '../middleware/auth.middleware';
-import { submitManualPayment } from '../controllers/contribution.controller';
+import {
+  submitManualPayment,
+  verifyPayment,
+} from '../controllers/contribution.controller';
 import { upload } from '../middleware/upload.middleware';
 
 const router = Router();
@@ -11,5 +14,7 @@ router.post(
   upload.single('image'),
   submitManualPayment
 );
+
+router.post('/verify/:contributionId', authenticate, verifyPayment);
 
 export default router;
