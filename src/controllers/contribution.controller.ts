@@ -56,9 +56,18 @@ export const verifyPayment = async (req: AuthRequest, res: Response) => {
 
   const status = action === 'APPROVE' ? Status.Confirmed : Status.Rejected;
 
+  const updateData: any = {
+    status,
+    rejectionReason: reason,
+  };
+
+  if (status === Status.Confirmed) {
+    updateData.confirmedAt = new Date();
+  }
+
   const contribution = await Contribution.findByIdAndUpdate(
     contributionId,
-    { status, rejectionReason: reason },
+    updateData,
     { new: true }
   );
 
