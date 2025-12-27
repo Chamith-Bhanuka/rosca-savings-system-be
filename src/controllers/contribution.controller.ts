@@ -5,23 +5,49 @@ import {
   PaymentMethod,
   Status,
 } from '../model/contribution.model';
+import cloudinary from '../config/cloudinary.config';
 
 export const submitManualPayment = async (req: AuthRequest, res: Response) => {
-  const { groupId, cycle, proofUrl } = req.body;
-  const userId = req.user.sub;
+  try {
+    const { groupId, cycle } = req.body;
+    const userId = req.user.sub;
 
-  const contribution = await Contribution.findOneAndUpdate(
-    { group: groupId, cycle, member: userId },
-    {
-      paymentMethod: PaymentMethod.Bank_Transfer,
-      proofUrl,
-      status: Status.PendingApproval,
-      createdAt: new Date(),
-    },
-    { upsert: true, new: true }
-  );
+    let proofUrl = '';
 
-  res.json({ message: 'Proof submitted', contribution });
+    if (req.file) {
+      const result: any = await new Promise(async (resolve, reject) => {
+        const upload_stream = cloudinary.uploader.upload_stream(
+          { folder: 'payment_proofs' },
+          (error, result) => {
+            if (error) {
+              return reject(error);
+            }
+            resolve(result);
+          }
+        );
+        upload_stream.end(req.file?.buffer);
+      });
+      proofUrl = result.secure_url;
+    }
+
+    console.log('Proof URL: ', proofUrl);
+
+    const contribution = await Contribution.findOneAndUpdate(
+      { group: groupId, cycle, member: userId },
+      {
+        paymentMethod: PaymentMethod.Bank_Transfer,
+        proofUrl,
+        status: Status.PendingApproval,
+        createdAt: new Date(),
+      },
+      { upsert: true, new: true }
+    );
+
+    res.json({ message: 'Proof submitted', contribution });
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send({ message: error.message });
+  }
 };
 
 export const verifyPayment = async (req: AuthRequest, res: Response) => {
