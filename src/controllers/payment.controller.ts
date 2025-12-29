@@ -4,7 +4,9 @@ import { Request, Response } from 'express';
 import { Group } from '../model/group.model';
 import { Contribution, PaymentMethod } from '../model/contribution.model';
 import { Status } from '../model/contribution.model';
-
+import { Payment, TransferMethods } from '../model/payment_transfer.model';
+import { User } from '../model/user.model';
+import { Status as PaymentStatus } from '../model/payment_transfer.model';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-12-15.clover',
 });
@@ -106,6 +108,62 @@ export const getContributions = async (req: Request, res: Response) => {
     return res.status(200).json({
       message: 'Contributions fetched successfully.!',
       data: contributions,
+    });
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const releasePayout = async (req: AuthRequest, res: Response) => {
+  const { groupId, cycle } = req.body;
+  const moderatorId = req.user.sub;
+
+  try {
+    const group = await Group.findById(groupId).populate('payoutOrder');
+    if (!group) return res.status(404).json({ message: 'Group not found.!' });
+
+    if (!group.createdBy.equals(moderatorId)) {
+      return res
+        .status(403)
+        .json({ message: 'Only moderator can release funds.!' });
+    }
+
+    const winner = group.payoutOrder[cycle - 1];
+    if (!winner)
+      return res
+        .status(400)
+        .json({ message: 'No winner defined for this cycle.!' });
+
+    const existingPayout = await Payment.findOne({
+      group: groupId,
+      cycle,
+      transferMethod: TransferMethods.GatewayPayout,
+    });
+
+    if (existingPayout) {
+      return res
+        .status(400)
+        .json({ message: 'Payout already released for this cycle.!' });
+    }
+
+    const poolAmount = group.amount * group.totalMembers;
+
+    const payout = await Payment.create({
+      group: groupId,
+      cycle,
+      fromPoolAmount: poolAmount,
+      toMember: winner._id,
+      transferMethod: TransferMethods.GatewayPayout,
+      status: PaymentStatus.Completed,
+      createdAt: new Date(),
+    });
+
+    const winningUser = await User.findById(winner);
+
+    return res.status(200).json({
+      message: `Payout of Rs.${poolAmount} released to ${winningUser?.firstName}`,
+      payout,
     });
   } catch (error: any) {
     console.error(error);
