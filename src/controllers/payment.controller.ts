@@ -1,12 +1,14 @@
 import Stripe from 'stripe';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { Request, Response } from 'express';
-import { Group } from '../model/group.model';
+import { Frequency, Group } from '../model/group.model';
 import { Contribution, PaymentMethod } from '../model/contribution.model';
 import { Status } from '../model/contribution.model';
 import { Payment, TransferMethods } from '../model/payment_transfer.model';
 import { User } from '../model/user.model';
 import { Status as PaymentStatus } from '../model/payment_transfer.model';
+import { Status as GroupStatus } from '../model/group.model';
+import { addMonths, addWeeks } from 'date-fns';
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: '2025-12-15.clover',
 });
@@ -129,6 +131,12 @@ export const releasePayout = async (req: AuthRequest, res: Response) => {
         .json({ message: 'Only moderator can release funds.!' });
     }
 
+    if (group.currentCycle !== cycle) {
+      return res.status(400).json({
+        message: `You can only release funds for the current cycle (${group.currentCycle})`,
+      });
+    }
+
     const winner = group.payoutOrder[cycle - 1];
     if (!winner)
       return res
@@ -138,7 +146,7 @@ export const releasePayout = async (req: AuthRequest, res: Response) => {
     const existingPayout = await Payment.findOne({
       group: groupId,
       cycle,
-      transferMethod: TransferMethods.GatewayPayout,
+      transferMethod: TransferMethods.Wallet,
     });
 
     if (existingPayout) {
@@ -154,16 +162,46 @@ export const releasePayout = async (req: AuthRequest, res: Response) => {
       cycle,
       fromPoolAmount: poolAmount,
       toMember: winner._id,
-      transferMethod: TransferMethods.GatewayPayout,
+      transferMethod: TransferMethods.Wallet,
       status: PaymentStatus.Completed,
       createdAt: new Date(),
     });
+
+    await User.findByIdAndUpdate(winner._id, {
+      $inc: { walletBalance: poolAmount },
+    });
+
+    const isLastCycle = group.currentCycle >= group.maxCycles;
+
+    if (isLastCycle) {
+      group.status = GroupStatus.Completed;
+      group.nextPaymentDate = null as any;
+    } else {
+      group.currentCycle += 1;
+      group.currentPayoutIndex += 1;
+
+      const currentDate = new Date(group.nextPaymentDate || group.startDate);
+      let nextDate = new Date();
+
+      if (group.frequency === Frequency.Monthly)
+        nextDate = addMonths(currentDate, 1);
+      if (group.frequency === Frequency.Weekly)
+        nextDate = addWeeks(currentDate, 1);
+      if (group.frequency === Frequency.BiWeekly)
+        nextDate = addWeeks(currentDate, 2);
+
+      group.nextPaymentDate = nextDate;
+    }
+
+    await group.save();
 
     const winningUser = await User.findById(winner);
 
     return res.status(200).json({
       message: `Payout of Rs.${poolAmount} released to ${winningUser?.firstName}`,
       payout,
+      nextCycle: group.currentCycle,
+      groupStatus: group.status,
     });
   } catch (error: any) {
     console.error(error);
