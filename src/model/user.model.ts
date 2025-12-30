@@ -24,6 +24,7 @@ export interface IUser extends Document {
   role: Role;
   trustScore: number;
   trustBadge: Badge;
+  walletBalance: number;
   groups: mongoose.Types.ObjectId[];
   createdGroups: mongoose.Types.ObjectId[];
   contributions: mongoose.Types.ObjectId[];
@@ -51,6 +52,7 @@ const UserSchema = new Schema<IUser>({
     enum: Object.values(Badge),
     default: Badge.New,
   },
+  walletBalance: { type: Number, default: 0 },
   groups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
   createdGroups: [{ type: Schema.Types.ObjectId, ref: 'Group' }],
   contributions: [{ type: Schema.Types.ObjectId, ref: 'Contribution' }],
