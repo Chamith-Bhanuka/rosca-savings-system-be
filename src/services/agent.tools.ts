@@ -25,7 +25,7 @@ export const searchGroupTool = async (params: {
       name: g.name,
       amount: g.amount,
       frequency: g.frequency,
-      link: '/groups/${g.id}',
+      link: `/groups/${g.id}`,
       startsIn: new Date(g.startDate).toDateString(),
     }));
   } catch (err: any) {
@@ -33,3 +33,31 @@ export const searchGroupTool = async (params: {
     return 'Error searching groups.';
   }
 };
+
+export const toolSchema = [
+  {
+    name: 'search_group',
+    description:
+      'Finds investment groups based on criteria like lowest amount, highest amount, or starting soon.',
+    parameters: {
+      type: 'OBJECT',
+      properties: {
+        sortBy: {
+          type: 'STRING',
+          enum: ['amount', 'startDate'],
+          description: 'What to sort results by',
+        },
+        order: {
+          type: 'STRING',
+          enum: ['asc', 'desc'],
+          description:
+            'Sort order: asc for lowest/soonest, desc for highest/latest',
+        },
+        limit: {
+          type: 'NUMBER',
+          description: 'Number of results to return (default 3)',
+        },
+      },
+    },
+  },
+];
