@@ -7,7 +7,7 @@ import { Audit } from '../model/audit.model';
 import { EntityType } from '../model/audit.model';
 import { Notification } from '../model/notification.model';
 import mongoose from 'mongoose';
-import { createAndDispatchNotification } from '../services/notification.service';
+import { createAndDispatchNotification } from '../services/notification';
 
 function computeHash(payload: object, prevHash?: string) {
   const json = JSON.stringify({ payload, prevHash: prevHash || '' });
