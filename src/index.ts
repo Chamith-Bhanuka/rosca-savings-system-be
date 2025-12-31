@@ -7,6 +7,7 @@ import notificationRouter from './routes/notification.routes';
 import paymentRouter from './routes/payment.routes';
 import contributionRouter from './routes/contribution.routes';
 import userRouter from './routes/user.routes';
+import chatRouter from './routes/chat.routes';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import http from 'http';
@@ -35,6 +36,7 @@ app.use('/api/v1/notifications', notificationRouter);
 app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/contribution', contributionRouter);
 app.use('/api/v1/user', userRouter);
+app.use('/api/v1/chat', chatRouter);
 
 app.use('/', (req, res) => {
   res.send('Backend is running..!');
