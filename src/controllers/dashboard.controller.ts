@@ -12,7 +12,7 @@ export const getDashboardData = async (req: AuthRequest, res: Response) => {
 
   try {
     const user = await User.findById(userId).select(
-      'firstName lastName profileImage trustScore walletBalance'
+      'firstName lastName avatarUrl trustScore walletBalance'
     );
     if (!user) return res.status(404).json({ message: 'User not found' });
 
