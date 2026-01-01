@@ -62,11 +62,11 @@ export const getMe = async (req: AuthRequest, res: Response) => {
     });
   }
 
-  const { firstName, lastName, email, role, _id } = user;
+  const { firstName, lastName, email, role, _id, avatarUrl, phone } = user;
 
   res.status(200).json({
     message: 'Ok',
-    data: { firstName, lastName, email, role, _id },
+    data: { firstName, lastName, email, role, _id, avatarUrl, phone },
   });
 };
 
