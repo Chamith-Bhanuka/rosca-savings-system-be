@@ -128,3 +128,28 @@ export const getWalletData = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteAccount = async (req: AuthRequest, res: Response) => {
+  const userId = req.user.sub;
+
+  try {
+    const activeGroups = await Group.findOne({
+      members: userId,
+      status: GroupStatus.Active,
+    });
+
+    if (activeGroups) {
+      return res.status(400).json({
+        message:
+          'Cannot delete account while you are in an active group. Please complete your cycles first.',
+      });
+    }
+
+    await User.findByIdAndDelete(userId);
+    res
+      .status(200)
+      .json({ message: 'Account deleted successfully. Goodbye.!' });
+  } catch (error: any) {
+    console.error({ message: error.message });
+  }
+};
