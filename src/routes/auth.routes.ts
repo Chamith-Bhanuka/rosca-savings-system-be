@@ -16,8 +16,8 @@ router.post('/login', login);
 
 // Protected
 router.get('/me', authenticate, getMe);
+
 router.post('/logout', authenticate, logout);
 
 router.post('/refresh', refreshToken);
-
 export default router;
