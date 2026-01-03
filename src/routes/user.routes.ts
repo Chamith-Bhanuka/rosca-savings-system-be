@@ -8,6 +8,7 @@ import router from './payment.routes';
 import { getDashboardData } from '../controllers/dashboard.controller';
 import { getUserAnalytics } from '../controllers/analytics.controller';
 import { upload } from '../middleware/upload.middleware';
+import { getLeaderboard } from '../controllers/leaderboard.controller';
 
 router.get('/wallet', authenticate, getWalletData);
 
@@ -18,5 +19,7 @@ router.get('/analytics', authenticate, getUserAnalytics);
 router.put('/profile', authenticate, upload.single('image'), updateProfile);
 
 router.delete('/profile', authenticate, deleteAccount);
+
+router.get('/leaderboard', authenticate, getLeaderboard);
 
 export default router;
