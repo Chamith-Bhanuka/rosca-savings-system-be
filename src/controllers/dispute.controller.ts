@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import cloudinary from '../config/cloudinary.config';
 import { Dispute, DisputeStatus } from '../model/dispute.model';
+import { Contribution } from '../model/contribution.model';
+import { Status as ContribStatus } from '../model/contribution.model';
 
 export const raiseDispute = async (req: AuthRequest, res: Response) => {
   const userId = req.user.sub;
@@ -54,6 +56,33 @@ export const getMyDisputes = async (req: AuthRequest, res: Response) => {
       .populate('group', 'name')
       .sort({ createdAt: -1 });
     res.json(disputes);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send({ error: error.message });
+  }
+};
+
+export const resolveDispute = async (req: AuthRequest, res: Response) => {
+  const { disputeId, resolution, adminComment } = req.body;
+
+  try {
+    const dispute = await Dispute.findById(disputeId);
+    if (!dispute) return res.status(404).send({ error: 'Dispute not found.!' });
+
+    dispute.adminResponse = adminComment;
+
+    if (resolution === 'APPROVE_PAYMENT' && dispute.contribution) {
+      await Contribution.findByIdAndUpdate(dispute.contribution, {
+        status: ContribStatus.Confirmed,
+        rejectionReason: `Resolved via Dispute ${dispute.ticketId}`,
+      });
+      dispute.status = DisputeStatus.Resolved;
+    } else {
+      dispute.status = DisputeStatus.Rejected;
+    }
+
+    await dispute.save();
+    res.json({ message: 'Disputed resolved.!', dispute });
   } catch (error: any) {
     console.error(error);
     res.status(500).send({ error: error.message });
