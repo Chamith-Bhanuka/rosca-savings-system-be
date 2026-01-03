@@ -45,3 +45,17 @@ export const raiseDispute = async (req: AuthRequest, res: Response) => {
     res.status(500).send({ error: error.message });
   }
 };
+
+export const getMyDisputes = async (req: AuthRequest, res: Response) => {
+  const userId = req.user.sub;
+
+  try {
+    const disputes = await Dispute.find({ initiator: userId })
+      .populate('group', 'name')
+      .sort({ createdAt: -1 });
+    res.json(disputes);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send({ error: error.message });
+  }
+};
