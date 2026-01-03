@@ -88,3 +88,17 @@ export const resolveDispute = async (req: AuthRequest, res: Response) => {
     res.status(500).send({ error: error.message });
   }
 };
+
+export const getAllDisputes = async (req: AuthRequest, res: Response) => {
+  try {
+    const disputes = await Dispute.find()
+      .populate('initiator', 'firstName lastName email')
+      .populate('group', 'name')
+      .sort({ createdAt: -1 });
+
+    res.json(disputes);
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send({ error: error.message });
+  }
+};
