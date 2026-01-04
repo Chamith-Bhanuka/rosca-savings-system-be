@@ -137,22 +137,29 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
   }
 };
 
-export const getAllGroups = async (req: Request, res: Response) => {
+export const getAllGroups = async (req: AuthRequest, res: Response) => {
   try {
-    //Pagination
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 4;
     const skip = (page - 1) * limit;
 
-    const groups = await Group.find()
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+    const mine = req.query.mine === 'true';
+    const query = mine ? { createdBy: req.user.sub } : {};
 
-    const total = await Group.countDocuments();
+    const [groups, total] = await Promise.all([
+      Group.find(query)
+        .populate({
+          path: 'members',
+          select: 'firstName lastName email trustScore avatarUrl',
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Group.countDocuments(query),
+    ]);
 
     return res.status(200).json({
-      message: 'Groups found successfully.!',
+      message: 'Groups fetched successfully!',
       data: groups,
       totalPages: Math.ceil(total / limit),
       totalCount: total,
@@ -160,9 +167,9 @@ export const getAllGroups = async (req: Request, res: Response) => {
     });
   } catch (err: any) {
     console.error(err);
-    return res
-      .status(500)
-      .json({ message: err.message || 'Failed to get groups.!' });
+    return res.status(500).json({
+      message: err.message || 'Failed to fetch groups!',
+    });
   }
 };
 
