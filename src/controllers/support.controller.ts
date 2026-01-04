@@ -39,3 +39,24 @@ export const subscribeNewsletter = async (req: Request, res: Response) => {
     res.status(500).send({ message: error.message });
   }
 };
+
+export const sendBroadcast = async (req: Request, res: Response) => {
+  const { subject, content } = req.body;
+
+  try {
+    const subscribers = await Subscriber.find();
+    if (subscribers.length === 0)
+      res.status(400).send({ message: 'No subscribers found.!' });
+
+    const promises = subscribers.map((sub) =>
+      sendEmail(sub.email, subject, content)
+    );
+
+    await Promise.all(promises);
+
+    res.json({ message: `Newsletter sent to ${subscribers.length} users.` });
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send({ message: error.message });
+  }
+};
