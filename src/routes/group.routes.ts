@@ -14,7 +14,7 @@ const router = Router();
 
 router.post('/create', authenticate, createGroup);
 
-router.get('/', getAllGroups);
+router.get('/', authenticate, getAllGroups);
 
 router.get('/:groupId', authenticate, getGroupDetails);
 
