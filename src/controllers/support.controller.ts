@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { sendEmail } from '../utils/email';
+import { Subscriber } from '../model/subscriber.model';
 
 export const contactSupport = async (req: Request, res: Response) => {
   const { email, subject, message } = req.body;
@@ -21,5 +22,20 @@ export const contactSupport = async (req: Request, res: Response) => {
   } catch (error: any) {
     console.error(error);
     res.status(500).send({ message: 'Failed to send message.!' });
+  }
+};
+
+export const subscribeNewsletter = async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  try {
+    const exist = Subscriber.findOne({ email });
+    if (!exist) return res.status(400).send({ message: 'Already exists.!' });
+
+    await Subscriber.create({ email });
+    res.json({ message: 'Subscribed successfully.!' });
+  } catch (error: any) {
+    console.error(error);
+    res.status(500).send({ message: error.message });
   }
 };
