@@ -9,6 +9,7 @@ import contributionRouter from './routes/contribution.routes';
 import userRouter from './routes/user.routes';
 import chatRouter from './routes/chat.routes';
 import disputeRouter from './routes/disputes.routes';
+import supportRouter from './routes/support.routes';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import http from 'http';
@@ -39,6 +40,7 @@ app.use('/api/v1/contribution', contributionRouter);
 app.use('/api/v1/user', userRouter);
 app.use('/api/v1/chat', chatRouter);
 app.use('/api/v1/dispute', disputeRouter);
+app.use('/api/v1/support', supportRouter);
 
 app.use('/', (req, res) => {
   res.send('Backend is running..!');
