@@ -14,7 +14,7 @@ const callGoogleGemini = async (
   tools: any[]
 ): Promise<AIResponse> => {
   const API_URL =
-    'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+    'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
 
   const geminiContents = messages.map((m: any) => ({
     role: m.role === 'assistant' ? 'model' : 'user', // Gemini uses 'model', generic uses 'assistant'
