@@ -6,6 +6,7 @@ import {
   Status,
 } from '../model/contribution.model';
 import cloudinary from '../config/cloudinary.config';
+import { Group } from '../model/group.model';
 
 export const submitManualPayment = async (req: AuthRequest, res: Response) => {
   try {
@@ -32,9 +33,13 @@ export const submitManualPayment = async (req: AuthRequest, res: Response) => {
 
     console.log('Proof URL: ', proofUrl);
 
+    const group = await Group.findById(groupId);
+    if (!group) return res.status(404).json({ message: 'Group not found' });
+
     const contribution = await Contribution.findOneAndUpdate(
       { group: groupId, cycle, member: userId },
       {
+        amount: group.amount,
         paymentMethod: PaymentMethod.Bank_Transfer,
         proofUrl,
         status: Status.PendingApproval,
