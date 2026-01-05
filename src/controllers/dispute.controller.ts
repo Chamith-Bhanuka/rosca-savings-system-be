@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../middleware/auth.middleware';
 import cloudinary from '../config/cloudinary.config';
 import { Dispute, DisputeStatus } from '../model/dispute.model';
-import { Contribution } from '../model/contribution.model';
+import { Contribution, Status } from '../model/contribution.model';
 import { Status as ContribStatus } from '../model/contribution.model';
 
 export const raiseDispute = async (req: AuthRequest, res: Response) => {
@@ -28,13 +28,27 @@ export const raiseDispute = async (req: AuthRequest, res: Response) => {
       evidenceUrl = result.secure_url;
     }
 
+    let targetContributionId = contributionId;
+
+    if (!targetContributionId) {
+      const lastRejected = await Contribution.findOne({
+        member: userId,
+        group: groupId,
+        status: Status.Rejected,
+      }).sort({ createdAt: -1 });
+
+      if (lastRejected) {
+        targetContributionId = lastRejected._id;
+      }
+    }
+
     const ticketId = `DSP-${Date.now().toString().slice(-6)}`;
 
     const dispute = await Dispute.create({
       ticketId,
       initiator: userId,
       group: groupId,
-      contribution: contributionId,
+      contribution: targetContributionId || null,
       subject,
       description,
       evidenceUrl,
