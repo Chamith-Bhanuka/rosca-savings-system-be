@@ -1,4 +1,4 @@
-# Seettuwa - Backend API Server 🚀
+# Seettuwa - Backend API Server
 
 > *The robust Node.js server powering the Seettuwa Digital ROSCA Platform.*
 
@@ -34,14 +34,14 @@ The API is built with **Node.js** and **Express**, using **MongoDB** for data pe
 
 ## ✨ Key Features
 
-* **🔐 Secure Authentication:** Robust **JWT-based** authentication with Role-Based Access Control (RBAC) for Users, Moderators, and Super Admins.
-* **🏦 Financial Engine:** Complex logic to handle ROSCA cycles, payment tracking, wallet management, and automated payout calculations.
-* **💳 Payment Gateway:** Full integration with **Stripe API** for processing contributions and secure payouts.
-* **🤖 AI Financial Assistant:** Integrated **Google Gemini AI** agent to provide financial advice and analyze user uploaded documents (payslips) for budget recommendations.
-* **⚡ Real-Time Events:** **Socket.io** integration for instant notifications, live chat, and the synchronized "Live Lucky Draw" feature.
-* **📅 Task Automation:** **Cron jobs** to automatically check for overdue payments, trigger cycle changes, and send reminders.
-* **⚖️ Dispute Resolution:** A dedicated workflow for users to contest rejected payments, complete with evidence uploads via **Cloudinary**.
-* **📧 Notification System:** Transactional emails (Welcome, OTP, Payment Receipts) powered by **SendGrid**.
+* **Secure Authentication:** Robust **JWT-based** authentication with Role-Based Access Control (RBAC) for Users, Moderators, and Super Admins.
+* **Financial Engine:** Complex logic to handle ROSCA cycles, payment tracking, wallet management, and automated payout calculations.
+* **Payment Gateway:** Full integration with **Stripe API** for processing contributions and secure payouts.
+* **AI Financial Assistant:** Integrated **Google Gemini AI** agent to provide financial advice and analyze user uploaded documents (payslips) for budget recommendations.
+* **Real-Time Events:** **Socket.io** integration for instant notifications, live chat, and the synchronized "Live Lucky Draw" feature.
+* **Task Automation:** **Cron jobs** to automatically check for overdue payments, trigger cycle changes, and send reminders.
+* **Dispute Resolution:** A dedicated workflow for users to contest rejected payments, complete with evidence uploads via **Cloudinary**.
+* **Notification System:** Transactional emails (Welcome, OTP, Payment Receipts) powered by **SendGrid**.
 
 ---
 
@@ -89,7 +89,7 @@ Follow these steps to set up the backend server locally.
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/Chamith-Bhanuka/seettuwa-backend.git](https://github.com/Chamith-Bhanuka/seettuwa-backend.git)
+    git clone https://github.com/Chamith-Bhanuka/rosca-savings-system-be
     cd seettuwa-backend
     ```
 
