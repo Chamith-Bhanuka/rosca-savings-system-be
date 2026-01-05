@@ -137,30 +137,73 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
   }
 };
 
+const calculateNextDueDate = (
+  startDate: Date,
+  frequency: string,
+  currentCycle: number
+): Date => {
+  const date = new Date(startDate);
+  const periodsToAdd = currentCycle;
+
+  if (frequency.toLowerCase() === 'monthly') {
+    date.setMonth(date.getMonth() + periodsToAdd);
+  } else if (frequency.toLowerCase() === 'weekly') {
+    date.setDate(date.getDate() + periodsToAdd * 7);
+  } else if (frequency.toLowerCase() === 'biweekly') {
+    date.setDate(date.getDate() + periodsToAdd * 14);
+  }
+
+  return date;
+};
+
 export const getAllGroups = async (req: AuthRequest, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 4;
+    const limit = parseInt(req.query.limit as string) || 6; // Changed default to 6 to match frontend
     const skip = (page - 1) * limit;
+    const filter = req.query.filter || 'all';
 
-    const mine = req.query.mine === 'true';
-    const query = mine ? { createdBy: req.user.sub } : {};
+    let query: any = {};
 
-    const [groups, total] = await Promise.all([
-      Group.find(query)
-        .populate({
-          path: 'members',
-          select: 'firstName lastName email trustScore avatarUrl',
-        })
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      Group.countDocuments(query),
-    ]);
+    if (filter === 'created') {
+      query = { createdBy: req.user.sub };
+    }
+
+    if (filter === 'joined') {
+      query = {
+        members: req.user.sub,
+      };
+    }
+
+    const total = await Group.countDocuments(query);
+
+    const rawGroups = await Group.find(query)
+      .populate({
+        path: 'members',
+        select: 'firstName lastName email trustScore avatarUrl',
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(); //plain JSON not Mongoose Docs
+
+    const groupsWithDates = rawGroups.map((group: any) => {
+      const nextDue = calculateNextDueDate(
+        group.startDate,
+        group.frequency,
+        group.currentCycle
+      );
+
+      return {
+        ...group,
+        nextPaymentDate: nextDue.toISOString(),
+        nextDrawDate: nextDue.toISOString(),
+      };
+    });
 
     return res.status(200).json({
       message: 'Groups fetched successfully!',
-      data: groups,
+      data: groupsWithDates,
       totalPages: Math.ceil(total / limit),
       totalCount: total,
       page,
