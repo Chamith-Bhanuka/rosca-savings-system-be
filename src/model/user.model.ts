@@ -21,7 +21,7 @@ export interface IUser extends Document {
   password?: string;
   googleId?: string;
   phone?: string;
-  role: Role;
+  role: Role[];
   trustScore: number;
   trustBadge: Badge;
   walletBalance: number;
@@ -42,9 +42,9 @@ const UserSchema = new Schema<IUser>({
   googleId: { type: String, index: true },
   phone: { type: String },
   role: {
-    type: String,
+    type: [String],
     enum: Object.values(Role),
-    default: Role.User,
+    default: [Role.User],
   },
   trustScore: { type: Number, default: 0 },
   trustBadge: {
