@@ -118,8 +118,8 @@ export const createGroup = async (req: AuthRequest, res: Response) => {
     await createdGroup.save();
 
     // Promote user role
-    if (user.role === 'USER') {
-      user.role = Role.Moderator;
+    if (!user.role.includes(Role.Moderator)) {
+      user.role.push(Role.Moderator);
     }
 
     user.createdGroups = user.createdGroups || [];
