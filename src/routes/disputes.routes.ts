@@ -7,6 +7,8 @@ import {
   raiseDispute,
   resolveDispute,
 } from '../controllers/dispute.controller';
+import { authorizeRoles } from '../middleware/role.middleware';
+import { Role } from '../model/user.model';
 
 const router = Router();
 
@@ -14,8 +16,18 @@ router.post('/', authenticate, upload.single('image'), raiseDispute);
 
 router.get('/', authenticate, getMyDisputes);
 
-router.put('/resolve', authenticate, resolveDispute);
+router.put(
+  '/resolve',
+  authenticate,
+  authorizeRoles(Role.Admin),
+  resolveDispute
+);
 
-router.get('/admin/all', authenticate, getAllDisputes);
+router.get(
+  '/admin/all',
+  authenticate,
+  authorizeRoles(Role.Admin),
+  getAllDisputes
+);
 
 export default router;
