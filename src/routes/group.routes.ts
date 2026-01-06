@@ -5,10 +5,12 @@ import {
   createGroup,
   declineJoinRequest,
   getAllGroups,
-  joinGroup,
   getGroupDetails,
+  joinGroup,
   triggerManualDraw,
 } from '../controllers/group.controller';
+import { authorizeRoles } from '../middleware/role.middleware';
+import { Role } from '../model/user.model';
 
 const router = Router();
 
@@ -23,15 +25,22 @@ router.post('/:groupId/join', authenticate, joinGroup);
 router.post(
   '/:groupId/pending/:userId/accept',
   authenticate,
+  authorizeRoles(Role.Moderator),
   acceptJoinRequest
 );
 
 router.post(
   '/:groupId/pending/:userId/decline',
   authenticate,
+  authorizeRoles(Role.Moderator),
   declineJoinRequest
 );
 
-router.post('/:groupId/draw', authenticate, triggerManualDraw);
+router.post(
+  '/:groupId/draw',
+  authenticate,
+  authorizeRoles(Role.Moderator),
+  triggerManualDraw
+);
 
 export default router;
