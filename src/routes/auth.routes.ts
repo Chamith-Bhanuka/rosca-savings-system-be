@@ -14,7 +14,6 @@ router.post('/register', register);
 
 router.post('/login', login);
 
-// Protected
 router.get('/me', authenticate, getMe);
 
 router.post('/logout', authenticate, logout);
