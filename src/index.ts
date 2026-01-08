@@ -30,6 +30,8 @@ app.use(
       'https://rosca-savings-system-fe.vercel.app/',
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
