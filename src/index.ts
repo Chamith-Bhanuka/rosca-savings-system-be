@@ -25,7 +25,10 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: true,
+    origin: [
+      'http://localhost:5173',
+      'https://rosca-savings-system-fe.vercel.app/',
+    ],
     credentials: true,
   })
 );
