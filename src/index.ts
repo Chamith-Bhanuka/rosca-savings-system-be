@@ -27,7 +27,7 @@ app.use(
   cors({
     origin: [
       'http://localhost:5173',
-      'https://rosca-savings-system-fe.vercel.app/',
+      'https://rosca-savings-system-fe.vercel.app',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
